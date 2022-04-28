@@ -11,10 +11,6 @@ const checkoutComplete = require('../pageObjects/checkout-complete');
 describe('UI Automation Test', () => {
   const EC = protractor.ExpectedConditions;
 
-  beforeAll(() => {
-    browser.ignoreSynchronization = true;
-  });
-
   it('should be able to load the site', async () => {
     await home.get();
     expect(home.waitForLoad(3000)).toBeTruthy();
