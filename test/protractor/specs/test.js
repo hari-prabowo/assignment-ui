@@ -1,6 +1,12 @@
-const fs = require('fs');
+const utils = require('../utils');
 const home = require('../pageObjects/home');
 const inv = require('../pageObjects/inventory');
+const invItem = require('../pageObjects/inventory-item');
+const header = require('../pageObjects/header');
+const cart = require('../pageObjects/cart');
+const checkoutOne = require('../pageObjects/checkout-one');
+const checkoutTwo = require('../pageObjects/checkout-two');
+const checkoutComplete = require('../pageObjects/checkout-complete');
 
 describe('UI Automation Test', () => {
   const EC = protractor.ExpectedConditions;
@@ -9,88 +15,73 @@ describe('UI Automation Test', () => {
     browser.ignoreSynchronization = true;
   });
 
-  it('should be able to load the site', () => {
-    home.get();
+  it('should be able to load the site', async () => {
+    await home.get();
     expect(home.waitForLoad(3000)).toBeTruthy();
   });
 
-  it('should be able to login with a valid account', () => {
-    home.enterUsername('standard_user');
-    home.enterPassword('secret_sauce');
-    home.clickLogin();
-    expect(inv.waitForLoad(3000)).toBeTruthy();
+  it('should be able to login with a valid account', async () => {
+    await home.enterUsername('standard_user');
+    await home.enterPassword('secret_sauce');
+    await home.clickLogin();
+    expect(inv.waitForLoad()).toBeTruthy();
   });
 
+  let firstItem;
   it('should be able to sort products by highest price', async () => {
-    inv.clickSortMenu();
-    inv.clickSortOption('Price (high to low)');
+    await inv.clickSortMenu();
+    await inv.clickSortOption('Price (high to low)');
 
-    const firstPrice = await element.all(by.css('div.inventory_item_price')).first().getText();
-    const lastPrice = await element.all(by.css('div.inventory_item_price')).last().getText();
-    expect(parseInt(firstPrice.substring(1))).toBeGreaterThan(parseInt(lastPrice.substring(1)));
+    firstItem = await inv.getFirstItem();
+    const lastItem = await inv.getLastItem();
+    expect(parseInt(firstItem.price.substring(1)))
+      .toBeGreaterThan(parseInt(lastItem.price.substring(1)));
   });
 
-  let itemName;
-  let itemPrice;
   it('should be able to open the first result', async () => {
-    const firstItem = element.all(by.css('div.inventory_item')).first();
-    itemName = await firstItem.element(by.css('div.inventory_item_name')).getText();
-    itemPrice = await firstItem.element(by.css('div.inventory_item_price')).getText();
+    await inv.clickItemByName(firstItem.name);
+    expect(invItem.waitForLoad()).toBeTruthy();
 
-    await firstItem.element(by.css('div.inventory_item_img')).click();
-    browser.wait(EC.urlContains('https://www.saucedemo.com/inventory-item.html'), 5000);
-    const name = await element(by.css('div.inventory_details_name')).getText();
-    const price = await element(by.css('div.inventory_details_price')).getText();
-    expect(name).toEqual(itemName);
-    expect(price).toEqual(itemPrice);
+    const itemDetails = await invItem.getItemDetails();
+    expect(itemDetails.name).toEqual(firstItem.name);
+    expect(itemDetails.price).toEqual(firstItem.price);
   });
 
   it('should be able to add product to cart', async () => {
-    element(by.cssContainingText('button', 'Add to cart')).click();
-    const cartItems = await element(by.css('a.shopping_cart_link')).getText();
-    expect(cartItems).toEqual('1');
+    await invItem.clickAddToCart();
+    expect(header.getNumCartItems()).toEqual('1');
   });
 
   it('should be able to view cart page containing the expected items', async () => {
-    await element(by.css('a.shopping_cart_link')).click();
-    browser.wait(EC.urlContains('https://www.saucedemo.com/cart.html'), 5000);
-    const name = await element(by.css('div.inventory_item_name')).getText();
-    const price = await element(by.css('div.inventory_item_price')).getText();
-    expect(name).toEqual(itemName);
-    expect(price).toEqual(itemPrice);
+    await header.clickCart();
+    expect (cart.waitForLoad()).toBeTruthy();
+
+    const items = await cart.getItems();
+    expect(items.length).toEqual(1);
+    expect(items[0].name).toEqual(firstItem.name);
+    expect(items[0].price).toEqual(firstItem.price);
   });
 
-  it('should be able to checkout', () => {
-    element(by.css('button[data-test="checkout"]')).click();
-    browser.wait(EC.urlContains('https://www.saucedemo.com/checkout-step-one.html'), 5000);
-    element(by.css('input[data-test="firstName"]')).sendKeys('Hari');
-    element(by.css('input[data-test="lastName"]')).sendKeys('Prabowo');
-    element(by.css('input[data-test="postalCode"]')).sendKeys('98121');
-    element(by.css('input[data-test="continue"]')).click();
-    browser.wait(EC.urlContains('https://www.saucedemo.com/checkout-step-two.html'), 5000);
+  it('should be able to checkout', async () => {
+    await cart.clickCheckout();
+    expect(checkoutOne.waitForLoad()).toBeTruthy();
+    await checkoutOne.enterFirstName('Hari');
+    await checkoutOne.enterLastName('Prabowo');
+    await checkoutOne.enterPostalCode('98121');
+    await checkoutOne.clickContinue();
+    expect(checkoutTwo.waitForLoad()).toBeTruthy();
   });
-
-  async function takeScreenshot(filename) {
-    const screenshot = await browser.takeScreenshot();
-    const stream = await fs.createWriteStream(filename);
-    await stream.write(new Buffer.from(screenshot, 'base64'));
-    stream.end();
-  }
 
   it('should show correct details on the checkout page and take a screenshot', async () => {
-    const name = await element(by.css('div.inventory_item_name')).getText();
-    const price = await element(by.css('div.inventory_item_price')).getText();
-    expect(name).toEqual(itemName);
-    expect(price).toEqual(itemPrice);
-    takeScreenshot('test-screenshot.png');
+    const items = await checkoutTwo.getItems();
+    expect(items.length).toEqual(1);
+    expect(items[0].name).toEqual(firstItem.name);
+    expect(items[0].price).toEqual(firstItem.price);
+    utils.takeScreenshot('test-screenshot.png');
   });
 
   it('should be able to complete purchase for the expected items', async () => {
-    element(by.css('button[data-test="finish"]')).click();
-    browser.wait(EC.urlContains('https://www.saucedemo.com/checkout-complete.html'), 5000);
-    const text = await element(by.css('div#checkout_complete_container')).getText();
-    expect(text.includes('THANK YOU FOR YOUR ORDER')).toBe(true);
+    await checkoutTwo.clickFinish();
+    expect(checkoutComplete.waitForLoad()).toBeTruthy();
   });
-
-
 });

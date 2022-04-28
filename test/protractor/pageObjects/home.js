@@ -1,28 +1,28 @@
 const Home = function() {
 
-  this.get = async () => {
-    return await browser.get('http://www.saucedemo.com');
+  this.get = () => {
+    return browser.get('http://www.saucedemo.com');
   };
 
-  this.waitForLoad = (timeout) => {
+  this.waitForLoad = (timeout = 1000) => {
     return browser.wait(() => {
-      return element(by.css('div.login_wrapper')).isPresent();
+      return $('div.login_wrapper').isPresent();
     }, timeout);
   };
 
-  this.enterUsername = async (username) => {
+  this.enterUsername = (username) => {
     const selector = 'input[data-test="username"]';
-    return element(by.css(selector)).sendKeys(username);
+    return $(selector).sendKeys(username);
   };
 
-  this.enterPassword = async (password) => {
+  this.enterPassword = (password) => {
     const selector = 'input[data-test="password"]';
-    return element(by.css(selector)).sendKeys(password);
+    return $(selector).sendKeys(password);
   };
 
   this.clickLogin = () => {
     const selector = 'input[data-test="login-button"]';
-    return element(by.css(selector)).click();
+    return $(selector).click();
   };
 
 };
