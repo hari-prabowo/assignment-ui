@@ -1,30 +1,29 @@
 const fs = require('fs');
+const home = require('../pageObjects/home');
+const inv = require('../pageObjects/inventory');
 
 describe('UI Automation Test', () => {
   const EC = protractor.ExpectedConditions;
 
-  it('should be able to load the site', () => {
+  beforeAll(() => {
     browser.ignoreSynchronization = true;
-    browser.get('https://www.saucedemo.com/');
-    browser.wait(() => {
-      return element(by.css('div.login_wrapper')).isPresent();
-    }, 3000);
+  });
+
+  it('should be able to load the site', () => {
+    home.get();
+    expect(home.waitForLoad(3000)).toBeTruthy();
   });
 
   it('should be able to login with a valid account', () => {
-    const userSelector = 'input[data-test="username"]';
-    const passSelector = 'input[data-test="password"]';
-    const btnSelector = 'input[data-test="login-button"]';
-    element(by.css(userSelector)).sendKeys('standard_user');
-    element(by.css(passSelector)).sendKeys('secret_sauce');
-    element(by.css(btnSelector)).click();
-    browser.wait(EC.urlIs('https://www.saucedemo.com/inventory.html'), 5000);
+    home.enterUsername('standard_user');
+    home.enterPassword('secret_sauce');
+    home.clickLogin();
+    expect(inv.waitForLoad(3000)).toBeTruthy();
   });
 
   it('should be able to sort products by highest price', async () => {
-    const dropdownSelector = 'select[data-test="product_sort_container"]';
-    element(by.css(dropdownSelector)).click();
-    element(by.cssContainingText(`${dropdownSelector} option`, 'Price (high to low)')).click();
+    inv.clickSortMenu();
+    inv.clickSortOption('Price (high to low)');
 
     const firstPrice = await element.all(by.css('div.inventory_item_price')).first().getText();
     const lastPrice = await element.all(by.css('div.inventory_item_price')).last().getText();
