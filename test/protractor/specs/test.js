@@ -21,8 +21,8 @@ describe('UI Automation Test', () => {
   });
 
   it('should be able to login with a valid account', async () => {
-    await home.enterUsername('standard_user');
-    await home.enterPassword('secret_sauce');
+    await home.enterUsername(browser.params.user);
+    await home.enterPassword(browser.params.password);
     await home.clickLogin();
     expect(inv.waitForLoad()).toBeTruthy();
   });

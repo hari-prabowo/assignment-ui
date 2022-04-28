@@ -1,4 +1,3 @@
-// An example configuration file.
 exports.config = {
   directConnect: true,
 
@@ -17,5 +16,10 @@ exports.config = {
   // Options to be passed to Jasmine.
   jasmineNodeOpts: {
     defaultTimeoutInterval: 30000
+  },
+
+  params: {
+    user: 'standard_user',
+    password: 'secret_sauce'
   }
 };
