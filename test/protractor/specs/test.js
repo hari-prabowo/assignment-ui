@@ -1,3 +1,4 @@
+const fs = require('fs');
 
 describe('UI Automation Test', () => {
   const EC = protractor.ExpectedConditions;
@@ -70,15 +71,27 @@ describe('UI Automation Test', () => {
     browser.wait(EC.urlContains('https://www.saucedemo.com/checkout-step-two.html'), 5000);
   });
 
-  it('should be able to complete purchase for the expected items', async () => {
+  async function takeScreenshot(filename) {
+    const screenshot = await browser.takeScreenshot();
+    const stream = await fs.createWriteStream(filename);
+    await stream.write(new Buffer.from(screenshot, 'base64'));
+    stream.end();
+  }
+
+  it('should show correct details on the checkout page and take a screenshot', async () => {
     const name = await element(by.css('div.inventory_item_name')).getText();
     const price = await element(by.css('div.inventory_item_price')).getText();
     expect(name).toEqual(itemName);
     expect(price).toEqual(itemPrice);
+    takeScreenshot('test-screenshot.png');
+  });
+
+  it('should be able to complete purchase for the expected items', async () => {
     element(by.css('button[data-test="finish"]')).click();
     browser.wait(EC.urlContains('https://www.saucedemo.com/checkout-complete.html'), 5000);
     const text = await element(by.css('div#checkout_complete_container')).getText();
     expect(text.includes('THANK YOU FOR YOUR ORDER')).toBe(true);
-    browser.takeScreenshot();
   });
+
+
 });
