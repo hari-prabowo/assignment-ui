@@ -3,9 +3,10 @@
 ## Setup
 1. Clone this repository
 2. Under the root directory, run: `npm install`
+3. Make sure you have the latest Chrome version installed (version 101 at the time of this writing)
 
 ## Running Tests
-1. Under the root directory, run: `protractor test/protractor/conf.js`
+1. Under the root directory, run: `npm test`
 2. After test completes successfully, you can find a screenshot of the Checkout Step 2 page, as test-screenshot.png file under the root directory
 
 ## Test Framework
