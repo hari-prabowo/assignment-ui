@@ -2,10 +2,10 @@
 
 ## Setup
 1. Clone this repository
-2. Under the root directory, run npm install
+2. Under the root directory, run: `npm install`
 
 ## Running Tests
-1. Under the root directory, run protractor test/protractor/conf.js
+1. Under the root directory, run: `protractor test/protractor/conf.js`
 2. After test completes successfully, you can find a screenshot of the Checkout Step 2 page, as test-screenshot.png file under the root directory
 
 ## Test Framework
