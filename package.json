@@ -2,7 +2,8 @@
   "name": "assignment-ui",
   "description": "Project for UI test automation assignment",
   "scripts": {
-    "test": "webdriver-manager update && protractor test/protractor/conf.js"
+    "setup": "webdriver-manager update",
+    "test": "protractor test/protractor/conf.js"
   },
   "devDependencies": {
     "jasmine-spec-reporter": "^7.0.0",
